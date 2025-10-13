@@ -20,3 +20,5 @@ venv/
 
 # Node modules
 node_modules/
+
+data/
