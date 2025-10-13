@@ -1,0 +1,20 @@
+Features:
+
+Be able to create, delete Vector Stores, making sure that the admin has the right to do so and ensuring a lot of warning messages
+Implement Content Improvement Engine (CIE), that will track accessed sources and analyze the sentiment of the conversation 
+
+DB for VS content with: 
+	Origin/Source (Confluence, Uploaded, etc.) to display them in a correct manner and for filtering on the UI
+	State (to account for latency of deleting in the cloud
+	Useful metadata for the user (survey to know them), could also include CIE data
+	
+
+Okta OAuth for logging in, could also immediately use the oauth for confluence, salesforce, hubspot, etc.
+
+Own UI for chatbot, with message history, reasoning, etc.
+
+Handle empty content
+
+DB (UUID) for admin page 
+
+Daily Sync
