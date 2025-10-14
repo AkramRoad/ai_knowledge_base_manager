@@ -102,8 +102,8 @@ const ConfluenceTab = ({ vectorStoreId }: ConfluenceTabProps) => {
       isFetching = true;
       try {
         const [catalogRes, existingRes] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/confluence/catalog`),
-          fetch(`http://127.0.0.1:8000/vectorstore/${vectorStoreId}/pages`)
+          fetch(`http://127.0.0.1:8000/v1/confluence/catalog`),
+          fetch(`http://127.0.0.1:8000/v1/vectorstore/${vectorStoreId}/pages`)
         ]);
 
         const catalogJson = await catalogRes.json();
@@ -224,13 +224,19 @@ const ConfluenceTab = ({ vectorStoreId }: ConfluenceTabProps) => {
           toggleChildren(child.children, action);
         });
       };
-      if (enabled) {
-        newSet.add(pageId);
-        if (page) toggleChildren(page.children, 'add');
+  
+      // If the page has children, it's a "page tree". Only toggle the children.
+      if (page && page.children.length > 0) {
+        toggleChildren(page.children, enabled ? 'add' : 'delete');
       } else {
-        newSet.delete(pageId);
-        if (page) toggleChildren(page.children, 'delete');
+        // Otherwise, it's a "real" page, so toggle it directly.
+        if (enabled) {
+          newSet.add(pageId);
+        } else {
+          newSet.delete(pageId);
+        }
       }
+  
       return newSet;
     });
   };
@@ -258,9 +264,13 @@ const ConfluenceTab = ({ vectorStoreId }: ConfluenceTabProps) => {
   };
 
   const getAllPageIdsInTree = (page: ConfluencePage): string[] => {
-    let ids = [page.id];
-    for (const child of page.children) {
-      ids.push(...getAllPageIdsInTree(child));
+    let ids: string[] = [];
+    if (page.children.length > 0) {
+      for (const child of page.children) {
+        ids.push(...getAllPageIdsInTree(child));
+      }
+    } else {
+      ids.push(page.id);
     }
     return ids;
   };
@@ -276,6 +286,11 @@ const ConfluenceTab = ({ vectorStoreId }: ConfluenceTabProps) => {
 
   const getPageToggleState = (page: ConfluencePage): ToggleState => {
     const allPageIds = getAllPageIdsInTree(page);
+    if (allPageIds.length === 0) {
+        // This is a parent page with no children, treat it as a single page
+        const isEnabled = enabledPageIds.has(page.id);
+        return { checked: isEnabled, indeterminate: false };
+    }
     const enabledCount = allPageIds.filter(id => enabledPageIds.has(id)).length;
     if (enabledCount === 0) return { checked: false, indeterminate: false };
     if (enabledCount === allPageIds.length) return { checked: true, indeterminate: false };

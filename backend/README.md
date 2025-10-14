@@ -59,6 +59,6 @@ Defined in `main.py`.
 | Method | Endpoint | Purpose |
 | :--- | :--- | :--- |
 | `GET` | `/v1/vector-stores` | Lists configured Azure Vector Stores and metadata. |
-| `GET` | `/confluence/catalog` | Retrieves the entire Confluence hierarchy (spaces/pages). |
-| `GET` | `/vectorstore/{vector_store_id}/pages` | Returns the list of currently indexed Confluence page IDs in the specified vector store. |
+| `GET` | `/v1/confluence/catalog` | Retrieves the entire Confluence hierarchy (spaces/pages). |
+| `GET` | `/v1/vectorstore/{vector_store_id}/pages` | Returns the list of currently indexed Confluence page IDs in the specified vector store. |
 | `POST` | `/v1/pages/sync-now` | Triggers the ingestion pipeline based on the pages provided in the `SyncNowRequest`. |
