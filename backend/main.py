@@ -94,7 +94,7 @@ def get_vector_stores():
         }
 
     
-@app.get("/vectorstore/{vector_store_id}/pages")
+@app.get("/v1/vectorstore/{vector_store_id}/pages")
 def get_vectorstore_page_ids(vector_store_id: str):
     """
     Returns a list of Confluence page IDs currently in the vector store.
@@ -115,7 +115,7 @@ def get_vectorstore_page_ids(vector_store_id: str):
         }
 
 
-@app.get("/confluence/catalog")
+@app.get("/v1/confluence/catalog")
 def get_confluence_catalog():
     """
     Fetches the full Confluence catalog.
