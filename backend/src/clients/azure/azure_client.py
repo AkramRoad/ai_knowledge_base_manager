@@ -161,27 +161,45 @@ class AzureVectorStoreManager:
     @handle_azure_errors
     def list_vector_store_documents(self, vector_store_id: str) -> list[VectorStoreDocument]:
         """Return all documents in a given vector store with their metadata."""
-        documents = self.client.vector_stores.files.list(vector_store_id=vector_store_id)
-
-        if not documents or not documents.data:
-            logger.info(f"No files found in vector store {vector_store_id}.")
-            return []
-
-        docs_list = []
-        for doc in documents.data:
-            try:
-                doc_info = self.client.files.retrieve(doc.id)
-                docs_list.append(VectorStoreDocument(
-                    id=doc_info.id,
-                    filename=doc_info.filename,
-                    object=doc_info.object,
-                    status=doc_info.status,
-                    created_at=doc_info.created_at
-                ))
-            except NotFoundError:
-                logger.warning(f"File with ID {doc.id} not found while listing, skipping.")
-                continue
-
+        docs_list: list[VectorStoreDocument] = []
+        after = None  # Pagination cursor
+        
+        while True:
+            # Fetch a page of documents
+            if after:
+                documents = self.client.vector_stores.files.list(
+                    vector_store_id=vector_store_id,
+                    after=after
+                )
+            else:
+                documents = self.client.vector_stores.files.list(
+                    vector_store_id=vector_store_id
+                )
+            
+            if not documents or not documents.data:
+                break
+            
+            # Process each document in the current page
+            for doc in documents.data:
+                try:
+                    doc_info = self.client.files.retrieve(doc.id)
+                    docs_list.append(VectorStoreDocument(
+                        id=doc_info.id,
+                        filename=doc_info.filename,
+                        object=doc_info.object,
+                        status=doc_info.status,
+                        created_at=doc_info.created_at
+                    ))
+                except NotFoundError:
+                    logger.warning(f"File with ID {doc.id} not found while listing, skipping.")
+                    continue
+            
+            # Check if there are more pages
+            if documents.has_more:
+                after = documents.data[-1].id  # Use the last item's ID as cursor
+            else:
+                break
+        
         logger.info(f"{len(docs_list)} files found in vector store {vector_store_id}.")
         return docs_list
 
